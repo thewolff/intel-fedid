@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>JS MVC, Backbone.js, and Pies</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/default.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+		<script>
+			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<section>
+					<h1>JS MVC, Backbone.js, and YOU</h1>
+					<h3>Or: Say Goodbye to Spaghetti JS</h3>
+				</section>
+
+				<section>
+					<section>
+						<h2>Your single page web app's JS code is becoming a mess.</h2>
+						<img width="556" height="549" src="img/cthulhu.jpg"/>
+					</section>
+					<section>
+						<h2>You need a framework that’s:</h2>
+						<ul>
+							<li class="fragment">Minimalist</li>
+							<li class="fragment">Stable</li>
+							<li class="fragment">Extensible</li>
+						</ul>
+					</section>
+					<section>
+						<h2><q>Bring your truth out of the dom</q></h2>
+						<h3>Jeremy Ashkena</h3>
+						<img width="591" height="453" src="img/truth.jpg"/>
+					</section>
+				</section>
+
+				<section>
+					<h2>Minimalist MV* for JS</h2>
+				</section>
+
+				<section>
+					<section>
+						<h2>Backbone.JS Quick Start</h2>
+						<img width="500" height="343" src="img/homer-simpson.jpg"/>
+					</section>
+					<section>
+						<h2>Dependencies</h2>
+						<li class="fragment">Undersore.js or Lo-dash (Underscore fork with performance enahanacements)</li>
+						<li class="fragment">jQuery or Zepto for DOM manipulation</li>
+						<li class="fragment">That's it!</li>
+					</section>
+					<section>
+						<h2>The Absurdly Easy Instantiation</h2>
+						<pre><code contenteditable>
+//Model
+var Todo = Backbone.Model.extend({
+  defaults: {
+    title: '',
+    completed: false
+  }
+});
+var myTodo = new Todo({title:'Read the whole book', id: 2});
+
+//Collection
+var TodosCollection = Backbone.Collection.extend({
+  model: Todo,
+});
+var todos = new TodosCollection([myTodo]);
+
+//Views
+var TodoView = Backbone.View.extend({
+
+  tagName:  'li',
+
+  // Cache the template function for a single item.
+  todoTpl: _.template( $('#item-template').html() ),
+
+  events: {
+    'dblclick label': 'edit',
+    'keypress .edit': 'updateOnEnter',
+    'blur .edit':   'close'
+  },
+
+  // Re-render the titles of the todo item.
+  render: function() {
+    this.$el.html( this.todoTpl( this.model.toJSON() ) );
+    this.input = this.$('.edit');
+    return this;
+  },
+
+  edit: function() {
+    // executed when todo label is double clicked
+  },
+
+  close: function() {
+    // executed when todo loses focus
+  },
+
+  updateOnEnter: function( e ) {
+    // executed on each keypress when in todo edit mode, 
+    // but we'll wait for enter to get in action
+  }
+});
+
+var todoView = new TodoView();
+
+						</code></pre>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h2>Models:<br/>Embrace Your JS OCD</h2>
+						<img width="400" height="231" src="img/moben.png"/>
+					</section>
+					<section>
+						<h2>JS Data Without Models</h2>
+						<pre><code contenteditable>
+var todo = { description: 'Pick up milk', status: 'incomplete', id: 1 };
+&lt;h3 class='incomplete'&gt;
+  &lt;input type='checkbox' data-id='1' /&gt;
+  Pick up milk
+&lt;/h3&gt;
+					</code></pre>
+					<ul>
+						<li class="fragment">Likely to get real ugly, real fast</li>
+					</ul>
+					</section>
+					<section>
+						<h2>Backbone.js Model</h2>
+						<pre><code contenteditable>
+define([
+	'underscore',
+	'backbone'
+], function( _, Backbone ) {
+
+	var TodoModel = Backbone.Model.extend({
+		// Default attributes for the todo
+		defaults: {
+			title: '',
+			completed: false
+		},
+
+		// Toggle 'completed' state of this todo item.
+		toggle: function() {
+			this.save({
+				completed: !this.get('completed')
+			});
+		}
+	});
+
+	return TodoModel;
+});
+
+					</code></pre>
+					</section>
+					<section>
+						<h2>Getters, Setters, &amp; Ch-ch-changes</h2>
+						<ul>
+							<li class="fragment">Access model attributes with <code>Model.get()</code></li>
+							<li class="fragment">Pass attributes to model instance with <code>Model.set()</code></li>
+							<li class="fragment">Add listeners to monitor changes to model or specific attributes</li>
+						</ul>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>Collections:<br/>Backbone.Model Has a Posse</h2>
+						<img width="400" height="352" src="img/Andre-the-Giant-has-a-Posse.jpg"/>
+					</section>
+					<section>
+						<h2>Access Your Collections</h2>
+						<ul>
+							<li class="fragment">Get models by id with <code>Collection.get()</code></li>
+							<li class="fragment">Add and remove models via <code>.add()</code> and <code>.remove()</code></li>
+							<li class="fragment">Listen for models being added/removed to collection</li>
+							<li class="fragment">Or lisen to change events on all models in a collection</li>
+							<li class="fragment">Use <code>.update()</code> to sync entire collections with server</li>
+						</ul>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>Views:<br/>I Represent Models for the User</h2>
+						<img width="500" height="657" src="img/tron.jpg"/>
+					</section>
+					<section>
+						<h2>All about el</h2>
+						<ul>
+							<li class="fragment">Apps typically consist of a main app view and individual views for important models/collections</li>
+							<li class="fragment">All views have a DOM element reference via <code>el</code></li>
+							<li class="fragment"><code>el</code> can be assigned to an existing element or created newly via the framework</li>
+						</ul>
+					</section>
+					<section>
+						<h2>render() and the Technicolor Templates</h2>
+						<pre><code contenteditable>
+&lt;span id="todo-count"&gt;&lt;strong&gt;&lt;%= remaining %&gt;&lt;/strong&gt; &lt;%= remaining == 1 ? 'item' : 'items' %&gt; left&lt;/span&gt;
+&lt;ul id="filters"&gt;
+	&lt;li&gt;
+		&lt;a class="selected" href="#/"&gt;All&lt;/a&gt;
+	&lt;/li&gt;
+	&lt;li&gt;
+		&lt;a href="#/active"&gt;Active&lt;/a&gt;
+	&lt;/li&gt;
+	&lt;li&gt;
+		&lt;a href="#/completed"&gt;Completed&lt;/a&gt;
+	&lt;/li&gt;
+&lt;/ul&gt;
+&lt;% if ( completed ) { %&gt;
+&lt;button id="clear-completed"&gt;Clear completed (&lt;%= completed %&gt;)&lt;/button&gt;
+&lt;% } %&gt;
+						</code></pre>
+						<ul>
+							<li class="fragment"><code>render()</code> is an optional function that defines the logic for rendering a template</li>
+							<li class="fragment">Works with Underscore's built in micro-templates out of the box</li>
+							<li class="fragment">Easily configured to work Mustache.js, Handlebars.js, and more</li>
+						</ul>
+					</section>
+					<section>
+						<h2>Events All Up in Your Views</h2>
+						<ul>
+							<li class="fragment">Easily add event listeners to custom selectors or <code>el</code></li>
+							<li class="fragment">Supports common DOM event-types: <code>click</code>, <code>submit</code>, <code>mouseover</code>, <code>dblclick</code>, and more</li>
+							<li class="fragment">Backbone makes sure that <code>this</code> always refers to the current view object so you don't have to</li>
+						</ul>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>Routers:<br/>Glovesy Traffic Cops of Backbone</h2>
+						<img src="img/glovesy.jpg" width="634" height="796"/>
+					</section>
+					<section>
+						<h2>#hashing out Statefulness</h2>
+						<ul>
+							<li class="fragment">Uses browser's pushState and History API</li>
+							<li class="fragment">Fallback support via hash-tags with URL fragments</li>
+							<li class="fragment">Use <code>Backbone.history.start()</code> to begin monitoring <code>hashChange</code> events</li>
+						</ul>
+					</section>
+					<section>
+						<h2>Sync API and Friends</h2>
+						<ul>
+							<li class="fragment">Built-in method is tailored to RESTful JSON APIs</li>
+							<li class="fragment">Is designed to be overriden to support other backends</li>
+						</ul>
+					</section>
+					<section>
+						<h2>Backbone.js Router</h2>
+						<pre><code contenteditable>
+define([
+	'jquery',
+	'backbone',
+	'collections/todos',
+	'common'
+], function( $, Backbone, Todos, Common ) {
+
+	var Workspace = Backbone.Router.extend({
+		routes:{
+			'*filter': 'setFilter'
+		},
+
+		setFilter: function( param ) {
+			// Set the current filter to be used
+			Common.TodoFilter = param.trim() || '';
+
+			// Trigger a collection filter event, causing hiding/unhiding
+			// of the Todo view items
+			Todos.trigger('filter');
+		}
+	});
+
+	return Workspace;
+});
+
+						</code></pre>
+					</section>
+				</section>
+
+				<section>
+					<h2>Stability &amp; Extensibility</h2>
+				</section>
+
+				<section>
+					<section>
+					<h2>Backbone:<br/> Real World Use</h2>
+					<ul>
+						<li>Wordpress 3.5</li>
+						<li>DocumentCloud</li>
+						<li>USA Today</li>
+						<li>Foursquare (homepage map and lists)</li>
+						<li>Hulu</li>
+						<li><a href="http://backbonejs.org/#examples">A hojillion more...</a></li>
+					</ul>
+					</section>
+					<section>
+						<h2>All About Extensibility</h2>
+						<ul>
+							<li><a href="https://github.com/jeromegn/Backbone.localStorage">Backbone localStorage</a> - local storage for Backbone</li>
+							<li><a href="http://requirejs.org/">RequireJS</a> - for AMD patterns</li>
+							<li><a href="https://github.com/tbranyen/backbone-boilerplate/">Backbone Boilerplate and Grunt-BB</a> - quickstart with best practices</li>
+							<li><a href="http://marionettejs.com/">Marionette.js</a> - simplifies full-blown large scale JS apps</li>
+						</ul>
+					</section>
+					<section>
+						<h2>Further Resources</h2>
+						<ul>
+							<li><a href="http://backbonejs.org/">Backbonejs.org - exhaustive dox</a></li>
+							<li><a href="https://github.com/documentcloud/backbone">The Backbone Repo</a></li>
+							<li><a href="http://addyosmani.github.com/backbone-fundamentals/">Developing Backbone.js Applications</a> - open source e-book by Addy Osmani</li>
+							<li><a href="http://todomvc.com/">TodoMVC</a> - JS frameworks put to the test</li>
+						</ul>
+					</section>
+				</section>
+				<section>
+					<h2>Thank you!</h2>
+					<img src="img/treats.jpg" class="fragment"/>
+					<h2 class="fragment">And enjoy the treats.</h2>
+				</section>
+
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+					// { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
